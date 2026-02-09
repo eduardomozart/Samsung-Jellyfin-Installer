@@ -12,7 +12,7 @@ namespace Jellyfin2Samsung.Helpers.Core
         {
             try
             {
-                string baseDir = AppContext.BaseDirectory;
+                string baseDir = AppSettings.DataDir;
                 return PlatformService.GetEsbuildPath(Path.Combine(baseDir, AppSettings.EsbuildPath));
             }
             catch
