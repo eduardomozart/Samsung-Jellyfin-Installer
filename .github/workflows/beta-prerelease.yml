@@ -113,7 +113,7 @@ jobs:
           mkdir -p $PKG/opt/jellyfin2samsung \
                    $PKG/usr/share/{applications,icons/hicolor/256x256/apps}
 
-          cp publish/linux-x64/. $PKG/opt/jellyfin2samsung/
+          cp -R publish/linux-x64/. $PKG/opt/jellyfin2samsung/
           chmod +x $PKG/opt/jellyfin2samsung/Jellyfin2Samsung
 
           cp jellyfin.png $PKG/usr/share/icons/hicolor/256x256/apps/jellyfin2samsung.png
@@ -145,8 +145,8 @@ jobs:
           rm -rf AppDir
           mkdir -p AppDir/usr/lib/jellyfin2samsung AppDir/usr/bin
 
-          # Copy full publish output (dlls, .so, json, etc.)
-          cp -a publish/linux-x64/. AppDir/usr/lib/jellyfin2samsung/
+          # ✅ Copy the FULL publish output (recursive)
+          cp -R publish/linux-x64/. AppDir/usr/lib/jellyfin2samsung/
           chmod +x AppDir/usr/lib/jellyfin2samsung/Jellyfin2Samsung
 
           # Launcher in PATH
