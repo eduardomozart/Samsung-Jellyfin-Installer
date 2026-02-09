@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Jellyfin2Samsung.Extensions;
-using Jellyfin2Samsung.Helpers;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,8 +12,19 @@ namespace Jellyfin2Samsung
         [STAThread]
         public static void Main(string[] args)
         {
-            Directory.CreateDirectory(AppSettings.DataDir);
-            var logFolder = Path.Combine(AppSettings.DataDir, "Logs");
+            string logFolder;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var logRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                logFolder = Path.Combine(logRoot, "Jellyfin2Samsung", "Logs");
+            }
+            else
+            {
+                // Windows/macOS: keep existing behavior
+                logFolder = Path.Combine(AppContext.BaseDirectory, "Logs");
+            }
+
             Directory.CreateDirectory(logFolder);
 
             var dtg = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");

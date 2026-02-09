@@ -1,7 +1,6 @@
 ﻿using Jellyfin2Samsung.Models;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,19 +9,13 @@ namespace Jellyfin2Samsung.Helpers
     public class AppSettings
     {
         private const string FileName = "settings.json";
-
-        public static readonly string AppDir = AppContext.BaseDirectory;
-        public static readonly string DataDir = 
-            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Jellyfin2Samsung") : AppDir;
-
-        public static readonly string FolderPath = DataDir;
-        public static readonly string FilePath = Path.Combine(AppDir, FileName);
-        public static readonly string TizenSdbPath = Path.Combine(AppDir, "Assets", "TizenSDB");
-        public static readonly string CertificatePath = Path.Combine(AppDir, "Assets", "Certificate");
-        public static readonly string ProfilePath = Path.Combine(AppDir, "Assets", "TizenProfile");
-        public static readonly string EsbuildPath = Path.Combine(AppDir, "Assets", "esbuild");
-        public static readonly string DownloadPath = Path.Combine(DataDir, "Downloads");
+        public static readonly string FolderPath = AppContext.BaseDirectory;
+        public static readonly string FilePath = Path.Combine(FolderPath, FileName);
+        public static readonly string TizenSdbPath = Path.Combine(FolderPath, "Assets", "TizenSDB");
+        public static readonly string CertificatePath = Path.Combine(FolderPath, "Assets", "Certificate");
+        public static readonly string ProfilePath = Path.Combine(FolderPath, "Assets", "TizenProfile");
+        public static readonly string EsbuildPath = Path.Combine(FolderPath, "Assets", "esbuild");
+        public static readonly string DownloadPath = Path.Combine(FolderPath, "Downloads");
 
         private static AppSettings? _instance;
 
@@ -89,7 +82,7 @@ namespace Jellyfin2Samsung.Helpers
         // ----- Application-scoped settings (readonly at runtime) -----
         public string ReleasesUrl { get; set; } = "https://api.github.com/repos/jeppevinkel/jellyfin-tizen-builds/releases";
         public string AuthorEndpoint { get; set; } = "https://dev.tizen.samsung.com/apis/v2/authors";
-        public string AppVersion { get; set; } = "v2.2.0.2";
+        public string AppVersion { get; set; } = "v2.2.0.1";
         public string TizenSdb { get; set; } = "https://api.github.com/repos/PatrickSt1991/tizen-sdb/releases";
         public string JellyfinAvRelease { get; set; } = "https://api.github.com/repos/PatrickSt1991/tizen-jellyfin-avplay/releases";
         public string JellyfinAvReleaseFork { get; set; } = "https://api.github.com/repos/asamahy/tizen-jellyfin-avplay/releases";

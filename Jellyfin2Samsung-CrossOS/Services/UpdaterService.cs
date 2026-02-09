@@ -259,7 +259,7 @@ namespace Jellyfin2Samsung.Services
         {
             try
             {
-                var appDir = AppSettings.DataDir;
+                var appDir = AppContext.BaseDirectory;
                 var updateDir = Path.Combine(Path.GetTempPath(), "Jellyfin2Samsung_Update", "extracted");
                 var backupDir = Path.Combine(Path.GetTempPath(), "Jellyfin2Samsung_Update", "backup");
 

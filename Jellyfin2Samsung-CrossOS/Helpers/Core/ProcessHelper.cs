@@ -63,7 +63,7 @@ namespace Jellyfin2Samsung.Helpers.Core
             };
 
             // Build log file path (next to app .exe)
-            string exeDir = AppSettings.DataDir;
+            string exeDir = AppContext.BaseDirectory;
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff");
             string firstTwoArgs = GetFirstArguments(arguments);
             string sanitizedArguments = new(firstTwoArgs.Where(c => char.IsLetterOrDigit(c) || c == '_' || c == '-').ToArray());
