@@ -661,11 +661,24 @@ namespace Jellyfin2Samsung.Services
 
         private async Task<(bool isInstalled, string? appId)> CheckForInstalledApp(string tvIpAddress, string packageUrl)
         {
-            var output = await _processHelper.RunCommandAsync(TizenSdbPath!, $"apps {tvIpAddress}");
+            var result = await _processHelper.RunCommandAsync(TizenSdbPath!, $"apps {tvIpAddress}");
+            var output = result?.Output ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(output) ||
+                output.Contains("Could not retrieve app list", StringComparison.OrdinalIgnoreCase) ||
+                output.Contains("Remote closed channel", StringComparison.OrdinalIgnoreCase))
+            {
+                string? packageAppId = await FileHelper.ReadWgtPackageId(packageUrl);
+                if (!string.IsNullOrWhiteSpace(packageAppId))
+                    return (true, $"{packageAppId}.{Constants.AppIdentifiers.JellyfinAppName}");
+
+                return (true, null);
+            }
+
             var baseSearch = Path.GetFileNameWithoutExtension(packageUrl).Split('-')[0];
 
             var blockRegex = RegexPatterns.TizenApp.CreateAppBlockByTitleRegex(baseSearch);
-            var blockMatch = blockRegex.Match(output.Output);
+            var blockMatch = blockRegex.Match(output);
 
             if (!blockMatch.Success)
                 return (false, null);
@@ -673,13 +686,14 @@ namespace Jellyfin2Samsung.Services
             var block = blockMatch.Value;
             var appIdMatch = RegexPatterns.TizenApp.AppTizenId.Match(block);
             string tvAppId = appIdMatch.Groups[1].Value.Trim();
-            string? packageAppId = await FileHelper.ReadWgtPackageId(packageUrl);
+            string? packageAppId2 = await FileHelper.ReadWgtPackageId(packageUrl);
 
-            if (tvAppId == $"{packageAppId}.{Constants.AppIdentifiers.JellyfinAppName}")
+            if (tvAppId == $"{packageAppId2}.{Constants.AppIdentifiers.JellyfinAppName}")
                 return (true, tvAppId);
 
             return (false, null);
         }
+
 
         private async Task<string> GetInstalledAppId(string tvIpAddress, string appTitle)
         {
