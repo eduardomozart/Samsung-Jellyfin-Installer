@@ -23,7 +23,6 @@ namespace Jellyfin2Samsung.Services
         private readonly IDialogService _dialogService;
         private readonly AppSettings _appSettings;
         private readonly JellyfinPackagePatcher _jellyfinWebPackagePatcher;
-        private readonly JellyfinApiClient _jellyfinApiClient;
         private readonly ProcessHelper _processHelper;
 
         public string? TizenSdbPath { get; private set; }
@@ -41,7 +40,6 @@ namespace Jellyfin2Samsung.Services
             _dialogService = dialogService;
             _appSettings = appSettings;
             _jellyfinWebPackagePatcher = jellyfinWebPackagePatcher;
-            _jellyfinApiClient = jellyfinApiClient;
             _processHelper = processHelper;
         }
 
@@ -223,7 +221,7 @@ namespace Jellyfin2Samsung.Services
                     return InstallResult.FailureResult(Constants.LocalizationKeys.InstallTizenSdb.Localized());
                 }
             }
-
+        
             try
             {
                 // Step 1: Prepare device and check for existing installations
@@ -328,7 +326,10 @@ namespace Jellyfin2Samsung.Services
                 if (_appSettings.DeletePreviousInstall)
                 {
                     progress?.Invoke(Constants.LocalizationKeys.DeleteExistingVersion.Localized());
-                    await UninstallPackageAsync(tvIpAddress, appId!);
+                    var uninstallResult = await UninstallPackageAsync(tvIpAddress, appId!);
+                    if (uninstallResult.Output.Contains(Constants.TizenErrorCodes.NotInstalled))
+                        return InstallResult.SuccessResult();
+
 
                     var (stillInstalled, _) = await CheckForInstalledApp(tvIpAddress, packageUrl);
                     if (stillInstalled)
@@ -661,37 +662,36 @@ namespace Jellyfin2Samsung.Services
 
         private async Task<(bool isInstalled, string? appId)> CheckForInstalledApp(string tvIpAddress, string packageUrl)
         {
-            var expectedAppId = await FileHelper.ReadWgtApplicationId(packageUrl);
-        
             var result = await _processHelper.RunCommandAsync(TizenSdbPath!, $"apps {tvIpAddress}");
             var output = result?.Output ?? string.Empty;
-        
+
+            // Read what the WGT *claims* its app id is (best effort fallback for "no listing" cases)
+            var wgtAppId = await FileHelper.ReadWgtApplicationId(packageUrl);
+
+            // Case 3: no listing -> assume installed, return WGT app id as best-effort
             if (string.IsNullOrWhiteSpace(output) ||
                 output.Contains("Could not retrieve app list", StringComparison.OrdinalIgnoreCase) ||
                 output.Contains("Remote closed channel", StringComparison.OrdinalIgnoreCase))
             {
-                // No listing → assume installed, and return expected id (Moonfin000.moonfin, Jellyfin..., etc.)
-                return !string.IsNullOrWhiteSpace(expectedAppId)
-                    ? (true, expectedAppId)
-                    : (true, null);
+                return (true, wgtAppId);
             }
-        
+
+            // Case 1/2: listing returned -> parse TV output
             var baseSearch = Path.GetFileNameWithoutExtension(packageUrl).Split('-')[0];
             var blockRegex = RegexPatterns.TizenApp.CreateAppBlockByTitleRegex(baseSearch);
             var blockMatch = blockRegex.Match(output);
-        
+
+            // Case 2: listing returned but not present
             if (!blockMatch.Success)
                 return (false, null);
-        
+
+            // Case 1: listing returned and present -> TV's id is the uninstall/overwrite truth
             var block = blockMatch.Value;
             var appIdMatch = RegexPatterns.TizenApp.AppTizenId.Match(block);
-            var tvAppId = appIdMatch.Groups[1].Value.Trim();
-        
-            if (!string.IsNullOrWhiteSpace(expectedAppId) &&
-                tvAppId.Equals(expectedAppId, StringComparison.Ordinal))
-                return (true, tvAppId);
-        
-            return (false, null);
+            var tvAppId = appIdMatch.Success ? appIdMatch.Groups[1].Value.Trim() : null;
+
+            // If we matched by title but couldn't parse ID, fall back to WGT ID
+            return (true, !string.IsNullOrWhiteSpace(tvAppId) ? tvAppId : wgtAppId);
         }
 
         private async Task<string> GetInstalledAppId(string tvIpAddress, string appTitle)
