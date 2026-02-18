@@ -238,6 +238,8 @@ namespace Jellyfin2Samsung.Helpers.Core
             public const string InvalidDeviceIp = "InvalidDeviceIp";
             public const string LblOther = "lblOther";
             public const string IpNotListed = "IpNotListed";
+            public const string IncompatiblePackage = "IncompatiblePackage";
+            public const string IncompatiblePackageDetailed = "IncompatiblePackageDetailed";
 
             // Updater localization keys
             public const string UpdateAvailable = "UpdateAvailable";
