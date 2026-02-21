@@ -30,6 +30,7 @@ namespace Jellyfin2Samsung.Helpers.Core
             public const string Twitch = "https://iili.io/fsvUNu2.md.gif";
             public const string ClubInfoBoard = "https://iili.io/fsviHQV.png";
             public const string Doom = "https://iili.io/fyofVqu.png";
+            public const string TTD = "https://iili.io/qFBP2vn.png";
         }
 
         /// <summary>
