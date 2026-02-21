@@ -128,7 +128,8 @@ namespace Jellyfin2Samsung.ViewModels
                 { "TVApp", Constants.PreviewImages.TVApp },
                 { "Twitch", Constants.PreviewImages.Twitch },
                 { "Club Info Board", Constants.PreviewImages.ClubInfoBoard },
-                { "Doom", Constants.PreviewImages.Doom }
+                { "Doom", Constants.PreviewImages.Doom },
+                { "TransportTycoonDeluxe", Constants.PreviewImages.TTD },
             };
 
             // Exceptions inside JellyfinVersions that should NOT use Jellyfin image
